@@ -1,9 +1,9 @@
-(function(remark, MathJax){
+(function(){
   let slideshow = remark.create({
     sourceUrl: 'presentation.md'
   });
-  
-  
+
+
   // Setup MathJax
   // MathJax.Hub.Config({
   //     tex2jax: {
@@ -12,4 +12,4 @@
   // });
   // 
   // MathJax.Hub.Configured();
-})(remark, MathJax);
+})();
