@@ -37,6 +37,64 @@ A [parser](https://en.wikipedia.org/wiki/Parsing) is a
 
 ---
 
+# Adhoc
+## Problem
+> Parse a comma separated string of integers into a list of integers
+
+--
+
+```elm
+type alias Input = 
+    String
+```
+
+--
+
+```elm
+type alias Output = 
+    List Int
+```
+
+--
+
+```elm
+type Error
+    = NotANumber String
+```
+
+---
+
+```elm
+parse : Input -> Result Error Output
+parse input =
+    let
+        toInt : String -> Result Error Int
+        toInt text =
+            text
+                |> String.toInt
+                |> Result.fromMaybe (NotANumber text)
+
+        prependTo : Result Error Output -> Int -> Result Error Output
+        prependTo tail head =
+            Result.map (\t -> head :: t) tail
+
+        folder : Result Error Int -> Result Error Output -> Result Error Output
+        folder head tail =
+            head
+                |> Result.andThen (prependTo tail)
+    in
+    input                            -- String
+        |> String.split ","          -- List String
+        |> List.map toInt            -- List (Result Error Int)
+        |> List.foldr folder (Ok []) -- Result Error Output
+```
+
+---
+
+[![asciicast](https://asciinema.org/a/210229.svg)](https://asciinema.org/a/210229)
+
+---
+
 ## Attributions
 
 * **We Can Do It!** -- By J. Howard Miller (1918–2004), artist employed by Westinghouse, poster used by the War Production Co-ordinating Committee - From scan of copy belonging to the National Museum of American History, Smithsonian Institution, retrieved from the website of the Virginia Historical Society., Public Domain, https://commons.wikimedia.org/w/index.php?curid=5249733
