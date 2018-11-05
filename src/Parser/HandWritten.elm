@@ -44,7 +44,9 @@ type TokenizeError
 
 type ParseError
     = UnexpectedToken Token
+    | UnexpectedEndOfInput
     | NotImplemented
+
 
 type alias Token =
     { tokenType : TokenType
@@ -55,10 +57,13 @@ type alias Token =
 
 type TokenType
     = Number Int
-    | TemperatureScale (Int -> Temperature)
+    | TemperatureScale Scale
     | Comma
     | Whitespace String
 
+
+type alias Scale =
+    Int -> Temperature
 
 parse : Input -> Result Error Output
 parse input =
@@ -177,6 +182,88 @@ isDigit character =
     in
     48 <= code && code <= 57
 
-parseTokens: List Token -> Result Error (List Temperature)
+
+parseTokens : List Token -> Result Error (List Temperature)
 parseTokens tokens =
-    Err <| Parse <| NotImplemented
+    case tokens of
+        [] ->
+            empty
+
+        _ ->
+            temperatureMeasurements tokens
+
+
+empty : Result Error (List Temperature)
+empty =
+    Ok <| []
+
+
+temperatureMeasurements : List Token -> Result Error (List Temperature)
+temperatureMeasurements tokens =
+    case tokens of
+        [] ->
+            Err <| Parse <| UnexpectedEndOfInput
+
+        _ ->
+            let
+                ( measurement, tail ) =
+                    temperatureMeasurement tokens
+            in
+            case tail of
+                [] ->
+                    measurement
+                        |> Result.map (\m -> [m])
+
+
+                ({ tokenType, start, finish } as t) :: ts ->
+                    case tokenType of
+                        Comma ->
+                            measurement
+                                |> Result.andThen
+                                    (\m ->
+                                        let
+                                            rest =
+                                                temperatureMeasurements ts
+                                        in
+                                        rest
+                                            |> Result.map (\ms -> (m :: ms))
+                                    )
+
+                        _ ->
+                            Err <| Parse <| UnexpectedToken t
+
+temperatureMeasurement : List Token -> (Result Error Temperature, List Token)
+temperatureMeasurement tokens =
+    case tokens of
+        [] ->
+            (Err <| Parse <| UnexpectedEndOfInput, tokens)
+
+        ({ tokenType, start, finish } as t) :: ts ->
+            case tokenType of
+                Number n ->
+                    let
+                        (scale, tail) = temperatureScale ts
+
+                        temperature =
+                            scale
+                                |> Result.map (\fc -> fc n)
+                    in
+                        (temperature, ts)
+
+                _ ->
+                    (Err <| Parse <| UnexpectedToken t, ts)
+
+temperatureScale : List Token -> (Result Error Scale, List Token)
+temperatureScale tokens =
+    case tokens of
+        [] ->
+            (Err <| Parse <| UnexpectedEndOfInput, tokens)
+
+        ({ tokenType, start, finish } as t) :: ts ->
+            case tokenType of
+                TemperatureScale scale ->
+                    (Ok scale, ts)
+
+                _ ->
+                    (Err <| Parse <| UnexpectedToken t, ts)
+
