@@ -1,4 +1,4 @@
-module Parser.Adhoc exposing (parse)
+module Parser.Adhoc exposing (parse, Input, Error, Output)
 
 {-| A demonstation of adhoc parsing.
 
