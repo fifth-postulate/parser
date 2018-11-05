@@ -41,6 +41,10 @@ A [parser](https://en.wikipedia.org/wiki/Parsing) is a
 ## Problem
 > Parse a comma separated string of integers into a list of integers
 
+```plain
+51,37,14,23,9,5,4,1
+```
+
 --
 
 ```elm
@@ -91,7 +95,35 @@ parse input =
 
 ---
 
-[![asciicast](https://asciinema.org/a/210229.svg)](https://asciinema.org/a/210229)
+[![asciicast](https://asciinema.org/a/210229.svg)](https://asciinema.org/a/210229**
+
+---
+
+# Hand Written
+## Problem
+> Parse a comma separated string of **temperature measurements** into a list of temperatures
+
+```plain
+19C, 66F ,20C , 68F,20C, 70F,21C
+```
+
+--
+
+```elm
+type alias Input = 
+    String
+```
+
+--
+
+```elm
+type alias Output = 
+    List Temperature
+
+type Temperature
+    = Celcius Int
+    | Fahrenheit Int
+```
 
 ---
 
