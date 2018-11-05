@@ -1,4 +1,4 @@
-module Parser.Adhoc exposing (parse, Input, Error, Output)
+module Parser.Adhoc exposing (Error, Input, Output, parse)
 
 {-| A demonstation of adhoc parsing.
 
@@ -49,7 +49,7 @@ parse input =
             head
                 |> Result.andThen (prependTo tail)
     in
-    input                            -- String
-        |> String.split ","          -- List String
-        |> List.map toInt            -- List (Result Error Int)
-        |> List.foldr folder (Ok []) -- Result Error Output
+    input
+        |> String.split ","
+        |> List.map toInt
+        |> List.foldr folder (Ok [])
