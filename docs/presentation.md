@@ -95,7 +95,7 @@ parse input =
 
 ---
 
-[![asciicast](https://asciinema.org/a/210229.svg)](https://asciinema.org/a/210229**
+[![asciicast](https://asciinema.org/a/210229.svg)](https://asciinema.org/a/210229?size=big)
 
 ---
 
@@ -127,7 +127,7 @@ type Temperature
 
 ---
 
-[![asciicast](https://asciinema.org/a/210277.svg)](https://asciinema.org/a/210277)
+[![asciicast](https://asciinema.org/a/210277.svg)](https://asciinema.org/a/210277?size=big)
 
 ---
 
