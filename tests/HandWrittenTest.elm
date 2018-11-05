@@ -41,6 +41,16 @@ suite =
                                 Ok [ Celcius 37, Fahrenheit 51 ]
                         in
                         Expect.equal actual expected
+                , test "multiple measurements with spaces" <|
+                    \_ ->
+                        let
+                            actual =
+                                parse "37C, 51F ,28C , 60F"
+
+                            expected =
+                                Ok [ Celcius 37, Fahrenheit 51, Celcius 28, Fahrenheit 60 ]
+                        in
+                        Expect.equal actual expected
                 ]
             ]
         ]

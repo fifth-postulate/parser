@@ -65,6 +65,7 @@ type TokenType
 type alias Scale =
     Int -> Temperature
 
+
 parse : Input -> Result Error Output
 parse input =
     let
@@ -185,12 +186,27 @@ isDigit character =
 
 parseTokens : List Token -> Result Error (List Temperature)
 parseTokens tokens =
-    case tokens of
+    let
+        nonWhitespaceTokens =
+            tokens
+                |> List.filter (\t -> not <| isWhitespaceToken t)
+    in
+    case nonWhitespaceTokens of
         [] ->
             empty
 
         _ ->
-            temperatureMeasurements tokens
+            temperatureMeasurements nonWhitespaceTokens
+
+
+isWhitespaceToken : Token -> Bool
+isWhitespaceToken { tokenType } =
+    case tokenType of
+        Whitespace _ ->
+            True
+
+        _ ->
+            False
 
 
 empty : Result Error (List Temperature)
@@ -212,8 +228,7 @@ temperatureMeasurements tokens =
             case tail of
                 [] ->
                     measurement
-                        |> Result.map (\m -> [m])
-
+                        |> Result.map (\m -> [ m ])
 
                 ({ tokenType, start, finish } as t) :: ts ->
                     case tokenType of
@@ -226,44 +241,46 @@ temperatureMeasurements tokens =
                                                 temperatureMeasurements ts
                                         in
                                         rest
-                                            |> Result.map (\ms -> (m :: ms))
+                                            |> Result.map (\ms -> m :: ms)
                                     )
 
                         _ ->
                             Err <| Parse <| UnexpectedToken t
 
-temperatureMeasurement : List Token -> (Result Error Temperature, List Token)
+
+temperatureMeasurement : List Token -> ( Result Error Temperature, List Token )
 temperatureMeasurement tokens =
     case tokens of
         [] ->
-            (Err <| Parse <| UnexpectedEndOfInput, tokens)
+            ( Err <| Parse <| UnexpectedEndOfInput, tokens )
 
         ({ tokenType, start, finish } as t) :: ts ->
             case tokenType of
                 Number n ->
                     let
-                        (scale, tail) = temperatureScale ts
+                        ( scale, tail ) =
+                            temperatureScale ts
 
                         temperature =
                             scale
                                 |> Result.map (\fc -> fc n)
                     in
-                        (temperature, tail)
+                    ( temperature, tail )
 
                 _ ->
-                    (Err <| Parse <| UnexpectedToken t, ts)
+                    ( Err <| Parse <| UnexpectedToken t, ts )
 
-temperatureScale : List Token -> (Result Error Scale, List Token)
+
+temperatureScale : List Token -> ( Result Error Scale, List Token )
 temperatureScale tokens =
     case tokens of
         [] ->
-            (Err <| Parse <| UnexpectedEndOfInput, tokens)
+            ( Err <| Parse <| UnexpectedEndOfInput, tokens )
 
         ({ tokenType, start, finish } as t) :: ts ->
             case tokenType of
                 TemperatureScale scale ->
-                    (Ok scale, ts)
+                    ( Ok scale, ts )
 
                 _ ->
-                    (Err <| Parse <| UnexpectedToken t, ts)
-
+                    ( Err <| Parse <| UnexpectedToken t, ts )
