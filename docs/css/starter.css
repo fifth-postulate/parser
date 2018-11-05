@@ -1,15 +1,26 @@
-.geometry img {
-    width: 400px;
-    height: 400px;
+img {
+    display: inherit;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.small.geometry {
-    position: absolute;
-    right: 0;
-    top: 0;
+.parsing-definition {
+    padding-top: 25px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
 }
 
-.small.geometry img {
+.parsing-definition img#input {
+    height: 100px;
+}
+
+.parsing-definition img#transform {
     width: 100px;
+}
+
+.parsing-definition img#output {
     height: 100px;
 }
