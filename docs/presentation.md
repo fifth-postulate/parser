@@ -28,6 +28,15 @@ A [parser](https://en.wikipedia.org/wiki/Parsing) is a
 
 ---
 
+# How to create a Parser?
+
+* Adhoc
+* Hand Written
+* Parser Generator
+* Parser Combinator
+
+---
+
 ## Attributions
 
 * **We Can Do It!** -- By J. Howard Miller (1918–2004), artist employed by Westinghouse, poster used by the War Production Co-ordinating Committee - From scan of copy belonging to the National Museum of American History, Smithsonian Institution, retrieved from the website of the Virginia Historical Society., Public Domain, https://commons.wikimedia.org/w/index.php?curid=5249733
