@@ -1,4 +1,4 @@
-module Parser.HandWritten exposing (Error, Input, Output, parse, tokenize)
+module Parser.HandWritten exposing (Error, Input, Output, Temperature(..), parse, tokenize)
 
 {-| A demonstration of hand written parser.
 
@@ -248,7 +248,7 @@ temperatureMeasurement tokens =
                             scale
                                 |> Result.map (\fc -> fc n)
                     in
-                        (temperature, ts)
+                        (temperature, tail)
 
                 _ ->
                     (Err <| Parse <| UnexpectedToken t, ts)
