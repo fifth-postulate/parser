@@ -26,6 +26,15 @@ A [parser](https://en.wikipedia.org/wiki/Parsing) is a
 <a href="https://openclipart.org/detail/133363/ontology"><img id="output" src="https://openclipart.org/download/133363/Ontology.svg" /></a>
 </section>
 
+???
+
+# Parsing
+## From input to output
+## Input usually String
+## But `elm/bytes` is around the corner
+## Output anything you want
+## Can fail!
+
 ---
 
 # How to create a Parser?
@@ -34,6 +43,13 @@ A [parser](https://en.wikipedia.org/wiki/Parsing) is a
 * Hand Written
 * Parser Generator
 * Parser Combinator
+
+???
+
+# Various Ways
+# No silver bullet
+# Pick the right tool
+# Stick around for some tips and tricks
 
 ---
 
@@ -66,6 +82,13 @@ type Error
     = NotANumber String
 ```
 
+???
+
+# Simple format
+# Comma separated
+# Same structure
+# Core functions suffices
+
 ---
 
 ```elm
@@ -92,6 +115,11 @@ parse input =
         |> List.map toInt            -- List (Result Error Int)
         |> List.foldr folder (Ok []) -- Result Error Output
 ```
+
+???
+
+# Entire parser
+# Most of the code is plumbing
 
 ---
 
@@ -125,14 +153,28 @@ type Temperature
     | Fahrenheit Int
 ```
 
+???
+
+# mostly simple format
+# Comma separated but with whitespace
+# Similar structure
+# Adhoc could work
+# But what if measurements in Kelvin
+
+
 ---
 
 # Methods
 
 1. Define **tokens**; units that you want to parse.
 2. Create a **tokenizer**.
-3. Write parse functions that consume tokens
+3. Write parse functions that consume tokens.
 
+???
+
+# Tokens are **numbers, spaces, commas, celcius scale, fahrenheit scale**
+# Chop up `String` to `List Char`
+# Goble up `Char`s to make Tokens
 
 ---
 
@@ -156,6 +198,13 @@ type TokenType
 type alias Scale =
     Int -> Temperature
 ```
+
+???
+
+# Tokens need to know where they come from
+# Mainly for Error reporting
+# Different types
+# Correspond with characters to expect
 
 ---
 
@@ -227,6 +276,11 @@ tokenizeWithIndex index characters =
 
 ```
 
+???
+
+# Pattern match on characters
+# Consume characters that fit the description
+
 ---
 
 # parse functions
@@ -269,9 +323,59 @@ temperatureMeasurement tokens =
                     ( Err <| Parse <| UnexpectedToken t, ts )
 ```
 
+???
+
+# Remove whitespace tokens
+# Create a function that parses token
+# Input is `List token`
+# Output is `(Result Error T, List Tokens)`
+## Datastructure you are interested in
+## Remaining Tokens to Parse
+
 ---
 
 [![asciicast](https://asciinema.org/a/210277.svg)](https://asciinema.org/a/210277?size=big)
+
+---
+
+# Parser Generator
+
+???
+
+# Describe tokens & grammar in a external Domain Specific Language
+# Use a tool that generates parser code
+# Hook into provided mechanism
+# Objections
+## Depend on the tool
+## Needs to play nice with language and infrastructure
+## Usually not worth the hassle in expressive languages
+
+---
+
+# Summary
+
+<table>
+  <thead>
+    <tr><th>Parser Type</th><th>Complexity</th><th>Lines of Code</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Adhoc</td>
+      <td>Meh</td>
+      <td>55</td>
+    </tr>
+    <tr>
+      <td>Hand written</td>
+      <td>Considerable</td>
+      <td>286</td>
+    </tr>
+    <tr>
+      <td>Combinator</td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
 
 ---
 
