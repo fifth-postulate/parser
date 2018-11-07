@@ -5,7 +5,7 @@ module Parser.HandWritten exposing (Error, Input, Output, Temperature(..), parse
 
 # Input
 
-A `String` of comma separeted values, specifically temperature measurements.
+A `String` of comma separated values, specifically temperature measurements.
 
 ```plain
 19C, 66F ,20C , 68F,20C, 70F,21C
