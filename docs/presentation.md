@@ -127,6 +127,150 @@ type Temperature
 
 ---
 
+# Methods
+
+1. Define **tokens**; units that you want to parse.
+2. Create a **tokenizer**.
+3. Write parse functions that consume tokens
+
+
+---
+
+# Tokens
+
+```elm
+type alias Token =
+    { tokenType : TokenType
+    , start : Int
+    , finish : Int
+    }
+
+
+type TokenType
+    = Number Int
+    | TemperatureScale Scale
+    | Comma
+    | Whitespace String
+
+
+type alias Scale =
+    Int -> Temperature
+```
+
+---
+
+# `tokenize`
+
+```elm
+tokenize : List Char -> Result Error (List Token)
+tokenize characters =
+    tokenizeWithIndex 0 characters
+
+
+tokenizeWithIndex : Int -> List Char -> Result Error (List Token)
+tokenizeWithIndex index characters =
+    case characters of
+        [] ->
+            Ok []
+
+        c :: cs ->
+            let
+                consTo : Result Error (List Token) -> Token -> Result Error (List Token)
+                consTo tail token =
+                    tail
+                        |> Result.map (\t -> token :: t)
+            in
+            case c of
+                ',' ->
+                    Token Comma index (index + 1)
+                        |> consTo (tokenizeWithIndex (index + 1) cs)
+
+                'C' ->
+                    Token (TemperatureScale Celcius) index (index + 1)
+                        |> consTo (tokenizeWithIndex (index + 1) cs)
+
+                'F' ->
+                    Token (TemperatureScale Fahrenheit) index (index + 1)
+                        |> consTo (tokenizeWithIndex (index + 1) cs)
+
+                ' ' ->
+                    let
+                        ( whitespace, tail ) =
+                            chompWhile isSpace characters
+
+                        length =
+                            String.length whitespace
+                    in
+                    Token (Whitespace whitespace) index (index + length)
+                        |> consTo (tokenizeWithIndex (index + length) tail)
+
+                _ ->
+                    if isDigit c then
+                        let
+                            ( digits, tail ) =
+                                chompWhile isDigit characters
+
+                            length =
+                                String.length digits
+                        in
+                        digits
+                            |> String.toInt
+                            |> Result.fromMaybe (Tokenize (NotANumber digits))
+                            |> Result.andThen
+                                (\n ->
+                                    Token (Number n) index (index + length)
+                                        |> consTo (tokenizeWithIndex (index + length) tail)
+                                )
+
+                    else
+                        Err <| Tokenize <| UnknownCharacter c
+
+```
+
+---
+
+# parse functions
+
+```elm
+parseTokens : List Token -> Result Error (List Temperature)
+parseTokens tokens =
+    let
+        nonWhitespaceTokens =
+            tokens
+                |> List.filter (\t -> not <| isWhitespaceToken t)
+    in
+    case nonWhitespaceTokens of
+        [] ->
+            empty
+
+        _ ->
+            temperatureMeasurements nonWhitespaceTokens
+
+temperatureMeasurement : List Token -> ( Result Error Temperature, List Token )
+temperatureMeasurement tokens =
+    case tokens of
+        [] ->
+            ( Err <| Parse <| UnexpectedEndOfInput, tokens )
+
+        ({ tokenType, start, finish } as t) :: ts ->
+            case tokenType of
+                Number n ->
+                    let
+                        ( scale, tail ) =
+                            temperatureScale ts
+
+                        temperature =
+                            scale
+                                |> Result.map (\fc -> fc n)
+                    in
+                    ( temperature, tail )
+
+                _ ->
+                    ( Err <| Parse <| UnexpectedToken t, ts )
+```
+
+---
+
 [![asciicast](https://asciinema.org/a/210277.svg)](https://asciinema.org/a/210277?size=big)
 
 ---
