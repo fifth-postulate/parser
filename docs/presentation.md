@@ -352,6 +352,116 @@ temperatureMeasurement tokens =
 
 ---
 
+# Parser Combinators
+
+A [parser combinator](https://en.wikipedia.org/wiki/Parser_combinator) is a
+
+>  higher-order function that accepts several parsers as input and returns a new parser as its output. In this context, a parser is a function accepting strings as input and returning some structure as output, typically a parse tree or a set of indices representing locations in the string where parsing stopped successfully. Parser combinators enable a recursive descent parsing strategy that facilitates modular piecewise construction and testing.
+
+???
+
+# Relies on higher order functions
+# Uses function composition
+# Easily testable
+
+---
+
+# `elm/parser`
+
+--
+
+```elm
+type alias Parser a
+
+run : Parser a -> String -> Result Error a
+```
+
+--
+
+## Building Block
+
+```elm
+float : Parser Int
+symbol : String -> Parser ()
+spaces : Parser ()
+```
+
+--
+
+## Pipeline
+
+```elm
+succeed : a -> Parser a
+(|=) : Parser (a -> b) -> Parser a -> Parser b
+(|.) : Parser keep -> Parser ignore -> Parser keep
+```
+
+???
+
+# Parser library
+# Parser combinator
+# `Parser a` is a parser that can
+## Consume a `String`
+## Produces `Result Error a`
+# Numerous building blocks
+# Various combinators
+
+---
+
+# `Point` Example
+
+## Problem
+> Parse the following into `Point` data structure
+
+```
+(10, 5)
+```
+
+--
+
+```elm
+type alias Point = { x : Float, y : Float }
+```
+
+--
+
+```elm
+point : Parser Point
+point =
+  succeed Point
+    |. symbol "("
+    |. spaces
+    |= float
+    |. spaces
+    |. symbol ","
+    |. spaces
+    |= float
+    |. spaces
+    |. symbol ")"
+```
+
+---
+
+# `elm/parser`
+
+## Problem
+
+> You have a planning problem defined as multiple records of teachers, groups and students, all as a huge, comma separated values format
+
+
+```plain
+GROUP, 28, "Math", 3, 5
+GROUP, 37, "Biology", 4, 3
+GROUP, 51, "Physics", 2, 8
+TEACHER, "Alice", "Math", "Biology"
+TEACHER, "Belinda", "Physics"
+STUDENT, 1729, 37, 51
+STUDENT, 3435, 51
+STUDENT, 1024, 28, 37, 51
+```
+
+---
+
 # Summary
 
 <table>
