@@ -61,6 +61,9 @@ A [parser](https://en.wikipedia.org/wiki/Parsing) is a
 51,37,14,23,9,5,4,1
 ```
 
+???
+# Use any tool that you have available
+
 --
 
 ```elm
@@ -299,9 +302,19 @@ parseTokens tokens =
 
         _ ->
             temperatureMeasurements nonWhitespaceTokens
+```
+???
 
-temperatureMeasurement : List Token -> ( Result Error Temperature, List Token )
-temperatureMeasurement tokens =
+# Remove whitespace tokens
+# Create a function that parses token
+
+---
+
+# more parse functions
+
+```elm
+tm : List Token -> ( Result Error Temperature, List Token )
+tm tokens =
     case tokens of
         [] ->
             ( Err <| Parse <| UnexpectedEndOfInput, tokens )
@@ -325,8 +338,6 @@ temperatureMeasurement tokens =
 
 ???
 
-# Remove whitespace tokens
-# Create a function that parses token
 # Input is `List token`
 # Output is `(Result Error T, List Tokens)`
 ## Datastructure you are interested in
@@ -368,6 +379,11 @@ A [parser combinator](https://en.wikipedia.org/wiki/Parser_combinator) is a
 
 # `elm/parser`
 
+???
+
+# is a package
+# provides these characteristics
+
 --
 
 ```elm
@@ -375,6 +391,12 @@ type alias Parser a
 
 run : Parser a -> String -> Result Error a
 ```
+
+???
+
+# `Parser a` is a parser that can
+## Consume a `String`
+## Produces `Result Error a`
 
 --
 
@@ -385,6 +407,9 @@ float : Parser Int
 symbol : String -> Parser ()
 spaces : Parser ()
 ```
+
+???
+# Numerous building blocks
 
 --
 
@@ -398,12 +423,6 @@ succeed : a -> Parser a
 
 ???
 
-# Parser library
-# Parser combinator
-# `Parser a` is a parser that can
-## Consume a `String`
-## Produces `Result Error a`
-# Numerous building blocks
 # Various combinators
 
 ---
@@ -417,11 +436,20 @@ succeed : a -> Parser a
 (10, 5)
 ```
 
+???
+
+# Straight out of the documentation
+
 --
 
 ```elm
 type alias Point = { x : Float, y : Float }
 ```
+
+???
+
+# With the creation of a type alias
+# a `Point: Float -> Float -> Point`
 
 --
 
@@ -453,12 +481,183 @@ point =
 GROUP, 28, "Math", 3, 5
 GROUP, 37, "Biology", 4, 3
 GROUP, 51, "Physics", 2, 8
-TEACHER, "Alice", "Math", "Biology"
-TEACHER, "Belinda", "Physics"
-STUDENT, 1729, 37, 51
-STUDENT, 3435, 51
-STUDENT, 1024, 28, 37, 51
+TEACHER, "Alice", "Math", "Biology";
+TEACHER, "Belinda", "Physics";
+STUDENT, 1729, 37, 51;
+STUDENT, 3435, 51;
+STUDENT, 1024, 28, 37, 51;
 ```
+
+???
+
+# Planning problem
+# Each week 6 hour of planning
+# Reach out to cut this time down
+
+---
+
+# Actually
+## Several Problems
+
+* How to parse `28, "Math", 3, 5` into a `Group`?
+* How to parse `"Alice", "Math", "Biology";` into a `Teacher`?
+* How to parse `1729, 37, 51;` into a `Student`?
+* How to parse a record?
+* How to parse all records?
+* How to stitch these together?
+
+---
+
+[![asciicast](https://asciinema.org/a/210738.svg)](https://asciinema.org/a/210738?size=big)
+
+---
+
+# Composition
+
+```elm
+student : Parser Student
+student =
+    succeed Student
+        |= int
+        |. spaces
+        |. comma
+        |. spaces
+        |= memberships
+
+
+comma : Parser ()
+comma =
+    symbol ","
+```
+
+???
+
+# Higher order citizens
+# Play well with the language
+
+---
+
+# `sequence`
+
+```elm
+memberships : Parser (List Int)
+memberships =
+    sequence
+        { start = ""
+        , separator = ","
+        , end = ";"
+        , spaces = spaces
+        , item = int
+        , trailing = Parser.Forbidden
+        }
+```
+
+???
+
+# Used with lists or records
+
+---
+
+# chomping
+
+```elm
+quotedWord : Parser String
+quotedWord =
+    let
+        isQuote c =
+            c == '"'
+
+        removeQuotes input _ =
+            String.slice 1 -1 input
+    in
+    mapChompedString removeQuotes <|
+        succeed ()
+            |. chompIf isQuote
+            |. chompUntil "\""
+            |. chompIf isQuote
+```
+
+???
+
+# Chompin if all else fail
+# uses internal state of the parser
+# which you can hook in to
+
+---
+
+# `oneOf`, `map`, `problem`
+
+```elm
+oneOf
+[ map (\_ -> "GROUP") (keyword "GROUP")
+, map (\_ -> "TEACHER") (keyword "TEACHER")
+, map (\_ -> "STUDENT") (keyword "STUDENT")
+, problem "record not of type GROUP, TEACHER or STUDENT"
+]
+```
+
+???
+
+# oneOf for alternatives
+# mapping to transform
+# problem is fail
+
+---
+
+# `andThen`
+
+```elm
+    header
+        |> andThen record
+
+
+record : String -> Parser Record
+record header =
+    case header of
+        "GROUP" ->
+            map GroupRecord group
+
+        "TEACHER" ->
+            map TeacherRecord teacher
+
+        "STUDENT" ->
+            map StudentRecord student
+
+        _ ->
+            problem <| "Expected record of type GROUP, TEACHER or STUDENT. Got " ++ header
+
+```
+
+???
+
+# header is from the last slide
+# returns a `String`
+# Depend on that string, different parser
+
+---
+
+# `loop`
+
+```elm
+records : Parser (List Record)
+records =
+    loop [] recordsHelp
+
+
+recordsHelp : List Record -> Parser (Step (List Record) (List Record))
+recordsHelp reverseRecords =
+    oneOf
+        [ succeed (\aRecord -> Loop (aRecord :: reverseRecords))
+            |= line
+            |. symbol "\n"
+        , succeed ()
+            |> map (\_ -> Done (List.reverse reverseRecords))
+        ]
+```
+
+???
+
+# Loop over an indeterminate amount of things
 
 ---
 
@@ -466,26 +665,35 @@ STUDENT, 1024, 28, 37, 51
 
 <table>
   <thead>
-    <tr><th>Parser Type</th><th>Complexity</th><th>Lines of Code</th></tr>
+    <tr><th>Parser Type</th><th>Complexity (grammar/code)</th><th>Lines of Code</th></tr>
   </thead>
   <tbody>
     <tr>
       <td>Adhoc</td>
-      <td>Meh</td>
+      <td>Meh/High</td>
       <td>55</td>
     </tr>
     <tr>
       <td>Hand written</td>
-      <td>Considerable</td>
+      <td>Considerable/Higher</td>
       <td>286</td>
     </tr>
     <tr>
       <td>Combinator</td>
-      <td></td>
-      <td></td>
+      <td>Considerable/Ok</td>
+      <td>239</td>
     </tr>
   </tbody>
 </table>
+
+???
+
+# Adhoc only useful for the simplest structures
+# Hand written not worth the hassle
+# `elm/parser` takes care of plumbing and wins out
+
+# Advanced Parser
+# Backtracking
 
 ---
 

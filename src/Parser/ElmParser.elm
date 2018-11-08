@@ -16,6 +16,11 @@ STUDENT, 3435, 51;
 STUDENT, 1024, 28, 37, 51;
 ```
 
+Or as in a single line
+
+```elm
+input = "GROUP, 28, \"Math\", 3, 5\nGROUP, 37, \"Biology\", 4, 3\nGROUP, 51, \"Physics\", 2, 8\nTEACHER, \"Alice\", \"Math\", \"Biology\";\nTEACHER, \"Belinda\", \"Physics\";\nSTUDENT, 1729, 37, 51;\nSTUDENT, 3435, 51;\nSTUDENT, 1024, 28, 37, 51;\n"
+```
 
 # Output
 
