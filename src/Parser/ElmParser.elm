@@ -35,12 +35,7 @@ type alias Output =
 
 
 type alias Error =
-    {}
-
-
-parse : Input -> Result Error Output
-parse input =
-    Err {}
+    List DeadEnd
 
 
 type alias ProblemDefinition =
@@ -68,6 +63,34 @@ type alias Student =
     { identity : Int
     , memberships : List Int
     }
+
+
+parse : Input -> Result Error Output
+parse input =
+    let
+        insert : Record -> ProblemDefinition -> ProblemDefinition
+        insert rec definition =
+            case rec of
+                GroupRecord g ->
+                    { definition | groups = g :: definition.groups }
+
+                TeacherRecord t ->
+                    { definition | teachers = t :: definition.teachers }
+
+                StudentRecord s ->
+                    { definition | students = s :: definition.students }
+
+        emptyDefinition =
+            { groups = []
+            , teachers = []
+            , students = []
+            }
+
+        toProblemDefinition recs =
+            List.foldr insert emptyDefinition recs
+    in
+    run records input
+        |> Result.map toProblemDefinition
 
 
 type Record
